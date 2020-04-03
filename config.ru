@@ -30,6 +30,8 @@ Tilt.register 'rb', OpalTemplate
 class App < Roda
   plugin :public
   plugin :assets, js: 'application.rb'
+  plugin :json
+  plugin :json_parser
   compile_assets
   context = ExecJS.compile(File.read("#{assets_opts[:compiled_js_path]}.#{assets_opts[:compiled]['js']}.js"))
 
@@ -66,11 +68,16 @@ class App < Roda
           file.write(Base64.decode64(r.params["image"]))
         end
         puts "******iamge saved******"
-        #results = IO.popen("python3 /home/cdz/code/crapstracker/find_pips_dice.py calibration.png sup.png sup")
-        results = `python3 /home/cdz/code/crapstracker/find_pips_dice.py /home/cdz/code/crapstracker/test.png /home/cdz/code/crapstracker/interval.png sup`
-        puts results, "**************************"
-        r.redirect
+        python_result = `python3 /home/cdz/code/crapstracker/find_pips_dice.py /home/cdz/code/crapstracker/calibration.png /home/cdz/code/crapstracker/interval.png sup`
+
+        puts python_result, "**************************"
+
+        {result: python_result.strip.split(",")}
       end
+    end
+
+    r.on(:static) do
+      r.public
     end
 
   end
