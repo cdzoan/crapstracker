@@ -7,9 +7,9 @@ require 'set'
 require 'json'
 
 class Application < Snabberb::Component
+  needs :values, default: [], store: true
   def render
 		@interval = "off"
-    @result = nil
     @video = h(
       :video,
       attrs: { autoplay: true},
@@ -28,9 +28,19 @@ class Application < Snabberb::Component
       attrs: {src: "/public/images/draw_squares_dice.png" },
       style: { width: '320px', height: '240px', padding: '5px' },
     )
-    @text = h(
+    @title = h(
       :h1,
       'stream'
+    )
+    @title2 = h(
+      :h2,
+      'Results'
+    )
+
+    @show_results = h(
+      :div,
+      {style: { 'font-size': 30 }},
+			@values.to_s
     )
 
     onload = lambda do
@@ -130,10 +140,12 @@ class Application < Snabberb::Component
 
     h(:div, props, [
       buttons,
-      @text,
+      @title,
       top_row,
       @canvas,
       @drawn_image,
+      @title2,
+      @show_results,
     ])
   end
 
@@ -178,16 +190,18 @@ class Application < Snabberb::Component
     }
   end
 
+  #input = h(:input, props: { type: 'array', value: @values.last})
+
   def python_data(data)
-    @result = data
-    puts @result, 'first'
     data = JSON.parse(data)
     @result = data
-    puts @result, 'second'
+    puts @result, 'json parse data'
+    @result.each do |key, value|
+      store(:values, @values + [value])
+    end
   end
 
 end
-
 
 class Index < Snabberb::Layout
   def render
